@@ -16,6 +16,8 @@ const imagemin = require("gulp-imagemin");
 const del = require("del");
 const notify = require("gulp-notify");
 const browserSync = require("browser-sync").create();
+const svgSprite = require('gulp-svg-sprites');
+const replace	= require('gulp-replace');
 
 
 /*Path*/
@@ -27,6 +29,7 @@ const path = {
         html: distPath,
         css: distPath + "assets/css/",
         js: distPath + "assets/js/",
+        svg: distPath + "assets/images/icons/",
         images: distPath + "assets/images/",
         fonts: distPath + "assets/fonts/"
     },
@@ -34,6 +37,7 @@ const path = {
         html: srcPath + "*.html",
         css: srcPath + "assets/sass/*.sass",
         js: srcPath + "assets/js/*.js",
+        svg: srcPath + "assets/images/icons/**/*.svg",
         images: srcPath + "assets/images/**/*.{jpg,png,svg,gif,ico,webp,webmanifest,xml,json}",
         fonts: srcPath + "assets/fonts/**/*.{eot,woff,woff2,ttf,svg}"
     },
@@ -41,6 +45,7 @@ const path = {
         html: srcPath + "**/*.html",
         css: srcPath + "assets/sass/**/*.sass",
         js: srcPath + "assets/js/**/*.js",
+        svg: srcPath + "assets/images/icons/**/*.svg",
         images: srcPath + "assets/images/**/*.{jpg,png,svg,gif,ico,webp,webmanifest,xml,json}",
         fonts: srcPath + "assets/fonts/**/*.{eot,woff,woff2,ttf,svg}"
     },
@@ -125,6 +130,21 @@ function js() {
     .pipe(dest(path.build.js))
     .pipe(browserSync.reload({stream: true}));
 }
+function svg() {
+    return src(path.src.svg, {base: srcPath  + "assets/images/icons/"})
+		.pipe(replace('&gt;', '>'))
+		.pipe(svgSprite(
+            {
+                mode: 'symbols',
+                preview: false,
+                selector: '%f',
+                svg: {
+                    symbols: 'svg_sprite.svg'
+                }
+		    }
+        ))
+		.pipe(dest(path.build.svg));
+}
 
 function images() {
     return src(path.src.images, {base: srcPath  + "assets/images/"})
@@ -157,12 +177,13 @@ function watchFiles() {
     gulp.watch([path.watch.html], html);
     gulp.watch([path.watch.css], css);
     gulp.watch([path.watch.js], js);
+    gulp.watch([path.watch.svg], svg);
     gulp.watch([path.watch.images], images);
     gulp.watch([path.watch.fonts], fonts);
 
 }
 
-const build = gulp.series(clean, gulp.parallel(html, css, js, images, fonts));
+const build = gulp.series(clean, gulp.parallel(svg, html, css, js, images, fonts));
 const watch = gulp.parallel(build, watchFiles, serve);
 
 exports.html = html;
