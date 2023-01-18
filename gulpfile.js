@@ -17,7 +17,6 @@ const webp = require("gulp-webp");
 const newer = require("gulp-newer");
 const del = require("del");
 const notify = require("gulp-notify");
-const svgSprite = require("gulp-svg-sprite");
 const browserSync = require("browser-sync").create();
 
 
@@ -30,7 +29,6 @@ const path = {
         html: distPath,
         css: distPath + "assets/css/",
         js: distPath + "assets/js/",
-        // svg: distPath + "assets/images/icons/",
         images: distPath + "assets/images/",
         fonts: distPath + "assets/fonts/"
     },
@@ -39,7 +37,6 @@ const path = {
         css: srcPath + "assets/sass/*.sass",
         js: srcPath + "assets/js/*.js",
         images: srcPath + "assets/images/**/*.{jpg,png,gif,ico,svg,webp,webmanifest,xml,json}",
-        svg: srcPath + "assets/images/icons/*.svg",
         fonts: srcPath + "assets/fonts/**/*.{eot,woff,woff2,ttf,svg}"
     },
     watch: {
@@ -152,22 +149,7 @@ function images() {
             ]
         ))
         .pipe(dest(path.build.images))
-        // .pipe(src(path.src.svg))
-        // .pipe(dest(path.build.svg))
         .pipe(browserSync.reload({stream: true}));
-}
-
-function svg() {
-    return src(path.src.svg, {base: srcPath  + "assets/images/icons/"})
-        .pipe(svgSprite({
-            mode: {
-                stack: {
-                    sprite: `../icons/icons.svg`,
-                    example: true
-                }
-            },
-        }))
-        .pipe(dest(path.build.images))
 }
 
 function fonts() {
@@ -186,14 +168,13 @@ function watchFiles() {
     gulp.watch([path.watch.fonts], fonts);
 }
 
-const build = gulp.series(clean, gulp.parallel(html, css, js, images, svg, fonts));
+const build = gulp.series(clean, gulp.parallel(html, css, js, images, fonts));
 const watch = gulp.parallel(build, watchFiles, serve);
 
 exports.html = html;
 exports.css = css;
 exports.js = js;
 exports.images = images;
-exports.svg = svg;
 exports.fonts = fonts;
 exports.clean = clean;
 exports.build = build;
